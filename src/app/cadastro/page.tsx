@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { sugerirSku, buscarProximoSeq } from "@/lib/sku";
 
 interface Categoria {
   id: number;
   nome: string;
+  abreviatura: string;
 }
 
 interface FormData {
@@ -61,6 +63,15 @@ export default function CadastroPage() {
   useEffect(() => {
     fetch("/api/categorias").then((r) => r.json()).then(setCategorias);
   }, []);
+
+  const catSelecionada = categorias.find((c) => c.id === Number(form.categoriaId));
+
+  async function gerarSku() {
+    if (!catSelecionada?.abreviatura) { alert("Selecione uma categoria com abreviatura configurada"); return; }
+    const seq = await buscarProximoSeq();
+    const sku = sugerirSku(catSelecionada.abreviatura, form.subCategoria, form.nome, seq);
+    setForm((prev) => ({ ...prev, sku }));
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value, type } = e.target;
@@ -157,7 +168,12 @@ export default function CadastroPage() {
           <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-medium mb-1 text-zinc-500">SKU</label>
-              <input name="sku" value={form.sku} onChange={handleChange} required className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
+              <div className="flex gap-2">
+                <input name="sku" value={form.sku} onChange={handleChange} required className="flex-1 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800 font-mono" />
+                <button type="button" onClick={gerarSku} className="px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs font-medium hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap">
+                  Gerar
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 text-zinc-500">ID Impressora</label>

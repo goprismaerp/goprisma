@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Categoria {
-  id       Int       @id @default(autoincrement())
-  nome     String    @unique
-  produtos Produto[]
-  regras   RegraPrecificacao?
+  id          Int       @id @default(autoincrement())
+  nome        String    @unique
+  abreviatura String    @default("") @map("abreviatura")
+  produtos    Produto[]
+  regras      RegraPrecificacao?
 }
 
 model RegraPrecificacao {
