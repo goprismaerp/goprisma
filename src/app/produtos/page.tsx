@@ -43,6 +43,19 @@ export default function ProdutosPage() {
   const [modo, setModo] = useState<ModoView>("lista");
   const [colunasVisiveis, setColunasVisiveis] = useState<ColunaKey[]>(["sku", "nome", "cat", "custo", "preco"]);
   const [ordem, setOrdem] = useState<string>("novos");
+  const [aba, setAba] = useState<"todos" | "incompletos">("todos");
+
+  function camposPendentes(p: Produto) {
+    const pendentes: string[] = [];
+    if (!p.nome) pendentes.push("nome");
+    if (!p.sku) pendentes.push("sku");
+    if (!p.categoria) pendentes.push("categoria");
+    if (!p.precoSugerido || p.precoSugerido <= 0) pendentes.push("preço");
+    if (!p.custoTotal || p.custoTotal <= 0) pendentes.push("custo");
+    if (!p.pesoUsado || p.pesoUsado <= 0) pendentes.push("peso");
+    if (!p.tempoDecimal || p.tempoDecimal <= 0) pendentes.push("tempo");
+    return pendentes;
+  }
 
   function cmp(a: Produto, b: Produto) {
     switch (ordem) {
@@ -77,6 +90,12 @@ export default function ProdutosPage() {
         p.sku.toLowerCase().includes(busca.toLowerCase())
     )
     .sort(cmp);
+
+  const incompletos = produtos.filter((p) => camposPendentes(p).length > 0);
+
+  const exibidos = aba === "incompletos"
+    ? filtrados.filter((p) => camposPendentes(p).length > 0)
+    : filtrados;
 
   const opcoesOrdem = [
     { value: "novos", label: "Mais novos" },
@@ -134,6 +153,30 @@ export default function ProdutosPage() {
             Novo Produto
           </Link>
         </div>
+      </div>
+
+      <div className="flex items-center gap-4 border-b border-zinc-200 dark:border-zinc-700 pb-1">
+        <button onClick={() => setAba("todos")}
+          className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+            aba === "todos"
+              ? "border-zinc-800 dark:border-white text-zinc-900 dark:text-white"
+              : "border-transparent text-zinc-400 hover:text-zinc-600"
+          }`}>
+          Todos
+        </button>
+        <button onClick={() => setAba("incompletos")}
+          className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+            aba === "incompletos"
+              ? "border-zinc-800 dark:border-white text-zinc-900 dark:text-white"
+              : "border-transparent text-zinc-400 hover:text-zinc-600"
+          }`}>
+          Dados Incompletos
+          {incompletos.length > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-none">
+              {incompletos.length}
+            </span>
+          )}
+        </button>
       </div>
 
       <div className="flex items-center gap-4 flex-wrap">
@@ -198,11 +241,11 @@ export default function ProdutosPage() {
         </select>
       </div>
 
-      <p className="text-xs text-zinc-400">{filtrados.length} produto(s)</p>
+      <p className="text-xs text-zinc-400">{exibidos.length} produto(s)</p>
 
       {modo === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtrados.map((p) => (
+          {exibidos.map((p) => (
             <div key={p.id} className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors">
               {p.imagem ? (
                 <img src={p.imagem} alt={p.nome} className="w-full h-36 object-cover rounded-lg mb-3 bg-zinc-100 dark:bg-zinc-800" />
@@ -213,6 +256,15 @@ export default function ProdutosPage() {
               )}
               <div className="text-xs text-zinc-400 font-mono mb-1">{p.sku}</div>
               <h3 className="font-semibold text-sm leading-snug mb-2">{p.nome}</h3>
+              {camposPendentes(p).length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {camposPendentes(p).map((c) => (
+                    <span key={c} className="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-medium">
+                      falta {c}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="text-xs text-zinc-400 mb-1">{p.categoria?.nome}</div>
               {p.pesoUsado > 0 && <div className="text-xs text-zinc-400">{p.pesoUsado}g</div>}
               {p.tempoDecimal > 0 && <div className="text-xs text-zinc-400">{p.tempoDecimal.toFixed(1)}h</div>}
@@ -226,7 +278,7 @@ export default function ProdutosPage() {
               </div>
             </div>
           ))}
-          {filtrados.length === 0 && (
+          {exibidos.length === 0 && (
             <div className="col-span-full text-center py-12 text-zinc-400">Nenhum produto encontrado</div>
           )}
         </div>
@@ -244,10 +296,23 @@ export default function ProdutosPage() {
               </tr>
             </thead>
             <tbody>
-              {filtrados.map((p) => (
+              {exibidos.map((p) => (
                 <tr key={p.id} className="border-t border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                   {colunasVisiveis.includes("sku") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-zinc-500 font-mono`}>{p.sku}</td>}
-                  {colunasVisiveis.includes("nome") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} ${modo === "lista" ? "font-medium" : ""}`}>{p.nome}</td>}
+                  {colunasVisiveis.includes("nome") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} ${modo === "lista" ? "font-medium" : ""}`}>
+                    <div className="flex items-center gap-2">
+                      {p.nome}
+                      {camposPendentes(p).length > 0 && (
+                        <div className="flex gap-1">
+                          {camposPendentes(p).map((c) => (
+                            <span key={c} className="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-medium">
+                              falta {c}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </td>}
                   {colunasVisiveis.includes("cat") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-zinc-500`}>{p.categoria?.nome?.slice(0, modo === "compacto" ? 6 : undefined)}</td>}
                   {colunasVisiveis.includes("custo") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-right`}>{formatCurrency(p.custoTotal)}</td>}
                   {colunasVisiveis.includes("preco") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-right font-medium`}>{formatCurrency(p.precoSugerido)}</td>}
@@ -263,7 +328,7 @@ export default function ProdutosPage() {
                   )}
                 </tr>
               ))}
-              {filtrados.length === 0 && (
+              {exibidos.length === 0 && (
                 <tr><td colSpan={6} className="px-3 py-8 text-center text-zinc-400 text-xs">Nenhum produto</td></tr>
               )}
             </tbody>
