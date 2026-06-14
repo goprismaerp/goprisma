@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS "filamentos" ("id" INTEGER NOT NULL PRIMARY KEY AUTOI
 CREATE UNIQUE INDEX IF NOT EXISTS "filamentos_id_filamento_key" ON "filamentos"("id_filamento");
 ALTER TABLE "produtos" ADD COLUMN "imagem" TEXT NOT NULL DEFAULT '';
 ALTER TABLE "Categoria" ADD COLUMN "abreviatura" TEXT NOT NULL DEFAULT '';
+CREATE TABLE IF NOT EXISTS "users" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "username" TEXT NOT NULL, "password" TEXT NOT NULL, "nome" TEXT NOT NULL, "role" TEXT NOT NULL DEFAULT 'visitante');
+CREATE UNIQUE INDEX IF NOT EXISTS "users_username_key" ON "users"("username");
 `;
 
 export async function GET() {
@@ -80,6 +82,21 @@ export async function GET() {
         ],
       });
       results.push("Configurações de precificação criadas");
+    }
+
+    // 5. Seed default users
+    const users = [
+      { username: "admin", password: "$2a$10$placeholder", nome: "Administrador", role: "admin" },
+      { username: "visitante", password: "$2a$10$placeholder", nome: "Visitante", role: "visitante" },
+    ];
+    for (const u of users) {
+      const existing = await prisma.user.findUnique({ where: { username: u.username } });
+      if (!existing) {
+        const bcrypt = await import("bcryptjs");
+        const hash = bcrypt.hashSync(u.username === "admin" ? "admin123" : "visita123", 10);
+        await prisma.user.create({ data: { username: u.username, password: hash, nome: u.nome, role: u.role } });
+        results.push(`Usuário "${u.username}" criado`);
+      }
     }
 
     return NextResponse.json({ success: true, results });

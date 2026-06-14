@@ -15,6 +15,16 @@ model Categoria {
   regras      RegraPrecificacao?
 }
 
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  nome     String
+  role     String @default("visitante") // "admin" | "visitante"
+
+  @@map("users")
+}
+
 model RegraPrecificacao {
   id              Int      @id @default(autoincrement())
   categoriaId     Int      @unique @map("categoria_id")

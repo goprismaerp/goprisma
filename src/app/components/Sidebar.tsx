@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 interface LinkItem {
   href: string;
@@ -67,6 +68,9 @@ const sections: Section[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  if (!user || pathname === "/login") return null;
 
   return (
     <aside className="w-64 min-h-screen bg-zinc-900 dark:bg-black text-zinc-100 flex flex-col border-r border-zinc-700 dark:border-zinc-800 overflow-y-auto">
@@ -103,6 +107,23 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
+
+      <SidebarFooter />
     </aside>
+  );
+}
+
+function SidebarFooter() {
+  const { user, logout } = useAuth();
+  if (!user) return null;
+  return (
+    <div className="p-4 border-t border-zinc-700 dark:border-zinc-800">
+      <p className="text-xs text-zinc-400 truncate">{user.nome}</p>
+      <p className="text-[10px] text-zinc-600 mb-2">{user.role === "admin" ? "Administrador" : "Visitante"}</p>
+      <button onClick={logout}
+        className="w-full px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors">
+        Sair
+      </button>
+    </div>
   );
 }
