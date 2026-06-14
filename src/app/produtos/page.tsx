@@ -60,7 +60,7 @@ export default function ProdutosPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Produtos</h1>
+        <h1 className="text-2xl font-bold">Catálogo</h1>
         <div className="flex gap-2">
           <button
             onClick={recalcularTodos}

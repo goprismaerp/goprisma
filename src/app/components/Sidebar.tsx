@@ -18,7 +18,7 @@ const sections: Section[] = [
     title: "Geral",
     links: [
       { href: "/", label: "Dashboard" },
-      { href: "/produtos", label: "Produtos" },
+      { href: "/produtos", label: "Catálogo" },
       { href: "/relatorios", label: "Relatórios" },
       { href: "/precificacao", label: "Precificação" },
     ],
