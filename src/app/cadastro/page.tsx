@@ -146,6 +146,9 @@ export default function CadastroPage() {
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
           Preencha os dados conforme a planilha. Custos são calculados automaticamente.
         </p>
+        <p className="text-xs text-red-500 mt-1">
+          <span className="text-red-500">*</span> campos obrigatórios para precificação
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -161,7 +164,7 @@ export default function CadastroPage() {
               <input name="idImpressora" value={form.idImpressora} onChange={handleChange} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1 text-zinc-500">Categoria</label>
+              <label className="block text-xs font-medium mb-1 text-zinc-500">Categoria <span className="text-red-500">*</span></label>
               <select name="categoriaId" value={form.categoriaId} onChange={handleChange} required className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800">
                 <option value="">Selecione</option>
                 {categorias.map((c) => (
@@ -292,8 +295,8 @@ export default function CadastroPage() {
                 <input name="qtdMateriais" type="number" value={form.qtdMateriais} onChange={handleNumber} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1 text-zinc-500">Custo (R$)</label>
-                <input name="custoMaterial" type="number" step="0.01" value={form.custoMaterial} onChange={handleNumber} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
+              <label className="block text-xs font-medium mb-1 text-zinc-500">Custo (R$) <span className="text-red-500">*</span></label>
+              <input name="custoMaterial" type="number" step="0.01" value={form.custoMaterial} onChange={handleNumber} required className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
               </div>
             </div>
           </div>
@@ -310,8 +313,8 @@ export default function CadastroPage() {
                 <input name="qtdProtecao" type="number" value={form.qtdProtecao} onChange={handleNumber} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1 text-zinc-500">Custo (R$)</label>
-                <input name="custoProtecao" type="number" step="0.01" value={form.custoProtecao} onChange={handleNumber} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
+              <label className="block text-xs font-medium mb-1 text-zinc-500">Custo (R$) <span className="text-red-500">*</span></label>
+              <input name="custoProtecao" type="number" step="0.01" value={form.custoProtecao} onChange={handleNumber} required className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
               </div>
             </div>
           </div>
@@ -324,8 +327,8 @@ export default function CadastroPage() {
                 <input name="embalagem" value={form.embalagem} onChange={handleChange} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1 text-zinc-500">Custo (R$)</label>
-                <input name="custoEmbalagem" type="number" step="0.01" value={form.custoEmbalagem} onChange={handleNumber} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
+              <label className="block text-xs font-medium mb-1 text-zinc-500">Custo (R$) <span className="text-red-500">*</span></label>
+              <input name="custoEmbalagem" type="number" step="0.01" value={form.custoEmbalagem} onChange={handleNumber} required className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
               </div>
             </div>
           </div>
@@ -336,8 +339,8 @@ export default function CadastroPage() {
             <h2 className="text-lg font-semibold mb-4">Acabamento</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium mb-1 text-zinc-500">Tipo</label>
-                <select name="acabamento" value={form.acabamento} onChange={handleChange} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800">
+                <label className="block text-xs font-medium mb-1 text-zinc-500">Tipo <span className="text-red-500">*</span></label>
+                <select name="acabamento" value={form.acabamento} onChange={handleChange} required className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800">
                   <option value="padrao">Padrão</option>
                   <option value="holográfico">Holográfico</option>
                 </select>
