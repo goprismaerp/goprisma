@@ -19,6 +19,7 @@ interface Produto {
   pesoUsado: number;
   tempoDecimal: number;
   categoria: Categoria;
+  createdAt: string;
 }
 
 type ModoView = "grid" | "lista" | "compacto";
@@ -40,6 +41,20 @@ export default function ProdutosPage() {
   const [busca, setBusca] = useState("");
   const [modo, setModo] = useState<ModoView>("lista");
   const [colunasVisiveis, setColunasVisiveis] = useState<ColunaKey[]>(["sku", "nome", "cat", "custo", "preco"]);
+  const [ordem, setOrdem] = useState<string>("novos");
+
+  function cmp(a: Produto, b: Produto) {
+    switch (ordem) {
+      case "az": return a.nome.localeCompare(b.nome);
+      case "za": return b.nome.localeCompare(a.nome);
+      case "maior-custo": return b.custoTotal - a.custoTotal;
+      case "menor-custo": return a.custoTotal - b.custoTotal;
+      case "maior-preco": return b.precoSugerido - a.precoSugerido;
+      case "menor-preco": return a.precoSugerido - b.precoSugerido;
+      case "antigos": return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+  }
 
   function carregar() {
     const url = filtroCat ? `/api/produtos?categoriaId=${filtroCat}` : "/api/produtos";
@@ -54,11 +69,24 @@ export default function ProdutosPage() {
     carregar();
   }, [filtroCat]);
 
-  const filtrados = produtos.filter(
-    (p) =>
-      p.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      p.sku.toLowerCase().includes(busca.toLowerCase())
-  );
+  const filtrados = produtos
+    .filter(
+      (p) =>
+        p.nome.toLowerCase().includes(busca.toLowerCase()) ||
+        p.sku.toLowerCase().includes(busca.toLowerCase())
+    )
+    .sort(cmp);
+
+  const opcoesOrdem = [
+    { value: "novos", label: "Mais novos" },
+    { value: "antigos", label: "Mais antigos" },
+    { value: "az", label: "A-Z" },
+    { value: "za", label: "Z-A" },
+    { value: "menor-custo", label: "Menor custo" },
+    { value: "maior-custo", label: "Maior custo" },
+    { value: "menor-preco", label: "Menor preço" },
+    { value: "maior-preco", label: "Maior preço" },
+  ];
 
   async function deletar(id: number) {
     if (!confirm("Confirmar exclusão?")) return;
@@ -137,27 +165,37 @@ export default function ProdutosPage() {
         </select>
       </div>
 
-      {modo !== "grid" && (
-        <div className="flex items-center gap-2 text-sm flex-wrap">
-          <span className="text-xs text-zinc-400">Colunas:</span>
-          {COLUNAS.map((col) => (
-            <button key={col.key} onClick={() =>
-              setColunasVisiveis((prev) =>
-                prev.includes(col.key)
-                  ? prev.filter((k) => k !== col.key)
-                  : [...prev, col.key]
-              )
-            }
-              className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-                colunasVisiveis.includes(col.key)
-                  ? "bg-zinc-700 text-white"
-                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
-              }`}>
-              {col.label}
-            </button>
+      <div className="flex items-center gap-2 text-sm flex-wrap">
+        {modo !== "grid" && (
+          <>
+            <span className="text-xs text-zinc-400">Colunas:</span>
+            {COLUNAS.map((col) => (
+              <button key={col.key} onClick={() =>
+                setColunasVisiveis((prev) =>
+                  prev.includes(col.key)
+                    ? prev.filter((k) => k !== col.key)
+                    : [...prev, col.key]
+                )
+              }
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                  colunasVisiveis.includes(col.key)
+                    ? "bg-zinc-700 text-white"
+                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
+                }`}>
+                {col.label}
+              </button>
+            ))}
+            <span className="w-px h-4 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+          </>
+        )}
+        <span className="text-xs text-zinc-400">Ordenar:</span>
+        <select value={ordem} onChange={(e) => setOrdem(e.target.value)}
+          className="border border-zinc-300 dark:border-zinc-700 rounded px-2 py-0.5 text-xs bg-white dark:bg-zinc-800">
+          {opcoesOrdem.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
           ))}
-        </div>
-      )}
+        </select>
+      </div>
 
       <p className="text-xs text-zinc-400">{filtrados.length} produto(s)</p>
 
