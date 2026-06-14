@@ -23,12 +23,23 @@ interface Produto {
 
 type ModoView = "grid" | "lista" | "compacto";
 
+const COLUNAS = [
+  { key: "sku", label: "SKU" },
+  { key: "nome", label: "Nome" },
+  { key: "cat", label: "Cat" },
+  { key: "custo", label: "Custo" },
+  { key: "preco", label: "Preço" },
+] as const;
+
+type ColunaKey = (typeof COLUNAS)[number]["key"];
+
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [filtroCat, setFiltroCat] = useState("");
   const [busca, setBusca] = useState("");
   const [modo, setModo] = useState<ModoView>("lista");
+  const [colunasVisiveis, setColunasVisiveis] = useState<ColunaKey[]>(["sku", "nome", "cat", "custo", "preco"]);
 
   function carregar() {
     const url = filtroCat ? `/api/produtos?categoriaId=${filtroCat}` : "/api/produtos";
@@ -126,6 +137,28 @@ export default function ProdutosPage() {
         </select>
       </div>
 
+      {modo !== "grid" && (
+        <div className="flex items-center gap-2 text-sm flex-wrap">
+          <span className="text-xs text-zinc-400">Colunas:</span>
+          {COLUNAS.map((col) => (
+            <button key={col.key} onClick={() =>
+              setColunasVisiveis((prev) =>
+                prev.includes(col.key)
+                  ? prev.filter((k) => k !== col.key)
+                  : [...prev, col.key]
+              )
+            }
+              className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                colunasVisiveis.includes(col.key)
+                  ? "bg-zinc-700 text-white"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
+              }`}>
+              {col.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <p className="text-xs text-zinc-400">{filtrados.length} produto(s)</p>
 
       {modo === "grid" ? (
@@ -151,69 +184,41 @@ export default function ProdutosPage() {
             <div className="col-span-full text-center py-12 text-zinc-400">Nenhum produto encontrado</div>
           )}
         </div>
-      ) : modo === "compacto" ? (
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
-                <th className="px-3 py-2 font-medium text-xs">SKU</th>
-                <th className="px-3 py-2 font-medium text-xs">Nome</th>
-                <th className="px-3 py-2 font-medium text-xs">Cat</th>
-                <th className="px-3 py-2 font-medium text-xs text-right">Custo</th>
-                <th className="px-3 py-2 font-medium text-xs text-right">Preço</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtrados.map((p) => (
-                <tr key={p.id} className="border-t border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                  <td className="px-3 py-1.5 text-xs text-zinc-500 font-mono">{p.sku}</td>
-                  <td className="px-3 py-1.5 text-xs">{p.nome}</td>
-                  <td className="px-3 py-1.5 text-xs text-zinc-400">{p.categoria?.nome?.slice(0, 6)}</td>
-                  <td className="px-3 py-1.5 text-xs text-right">{formatCurrency(p.custoTotal)}</td>
-                  <td className="px-3 py-1.5 text-xs text-right font-medium">{formatCurrency(p.precoSugerido)}</td>
-                </tr>
-              ))}
-              {filtrados.length === 0 && (
-                <tr><td colSpan={5} className="px-3 py-8 text-center text-zinc-400 text-xs">Nenhum produto</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
       ) : (
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
-                <th className="px-4 py-3 font-medium">SKU</th>
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">Categoria</th>
-                <th className="px-4 py-3 font-medium text-right">Custo Total</th>
-                <th className="px-4 py-3 font-medium text-right">Preço Sugerido</th>
-                <th className="px-4 py-3 font-medium text-right">Ações</th>
+                {colunasVisiveis.includes("sku") && <th className={`font-medium ${modo === "compacto" ? "px-3 py-2 text-xs" : "px-4 py-3"}`}>SKU</th>}
+                {colunasVisiveis.includes("nome") && <th className={`font-medium ${modo === "compacto" ? "px-3 py-2 text-xs" : "px-4 py-3"}`}>Nome</th>}
+                {colunasVisiveis.includes("cat") && <th className={`font-medium ${modo === "compacto" ? "px-3 py-2 text-xs" : "px-4 py-3"}`}>Categoria</th>}
+                {colunasVisiveis.includes("custo") && <th className={`font-medium text-right ${modo === "compacto" ? "px-3 py-2 text-xs" : "px-4 py-3"}`}>Custo</th>}
+                {colunasVisiveis.includes("preco") && <th className={`font-medium text-right ${modo === "compacto" ? "px-3 py-2 text-xs" : "px-4 py-3"}`}>Preço</th>}
+                {modo === "lista" && <th className="px-4 py-3 font-medium text-right">Ações</th>}
               </tr>
             </thead>
             <tbody>
               {filtrados.map((p) => (
-                <tr key={p.id} className="border-t border-zinc-100 dark:border-zinc-800">
-                  <td className="px-4 py-3 text-zinc-500">{p.sku}</td>
-                  <td className="px-4 py-3 font-medium">{p.nome}</td>
-                  <td className="px-4 py-3 text-zinc-500">{p.categoria?.nome}</td>
-                  <td className="px-4 py-3 text-right">{formatCurrency(p.custoTotal)}</td>
-                  <td className="px-4 py-3 text-right font-medium">{formatCurrency(p.precoSugerido)}</td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    <button onClick={() => recalcular(p.id)}
-                      className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm" title="Recalcular">
-                      Recalc
-                    </button>
-                    <Link href={`/produtos/${p.id}`}
-                      className="text-blue-600 dark:text-blue-400 hover:underline text-sm">Editar</Link>
-                    <button onClick={() => deletar(p.id)}
-                      className="text-red-600 dark:text-red-400 hover:underline text-sm">Excluir</button>
-                  </td>
+                <tr key={p.id} className="border-t border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  {colunasVisiveis.includes("sku") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-zinc-500 font-mono`}>{p.sku}</td>}
+                  {colunasVisiveis.includes("nome") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} ${modo === "lista" ? "font-medium" : ""}`}>{p.nome}</td>}
+                  {colunasVisiveis.includes("cat") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-zinc-500`}>{p.categoria?.nome?.slice(0, modo === "compacto" ? 6 : undefined)}</td>}
+                  {colunasVisiveis.includes("custo") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-right`}>{formatCurrency(p.custoTotal)}</td>}
+                  {colunasVisiveis.includes("preco") && <td className={`${modo === "compacto" ? "px-3 py-1.5 text-xs" : "px-4 py-3"} text-right font-medium`}>{formatCurrency(p.precoSugerido)}</td>}
+                  {modo === "lista" && (
+                    <td className="px-4 py-3 text-right space-x-2">
+                      <button onClick={() => recalcular(p.id)}
+                        className="text-zinc-500 hover:text-zinc-800 text-sm" title="Recalcular">Recalc</button>
+                      <Link href={`/produtos/${p.id}`}
+                        className="text-blue-600 hover:underline text-sm">Editar</Link>
+                      <button onClick={() => deletar(p.id)}
+                        className="text-red-600 hover:underline text-sm">Excluir</button>
+                    </td>
+                  )}
                 </tr>
               ))}
               {filtrados.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-zinc-400">Nenhum produto encontrado</td></tr>
+                <tr><td colSpan={6} className="px-3 py-8 text-center text-zinc-400 text-xs">Nenhum produto</td></tr>
               )}
             </tbody>
           </table>
