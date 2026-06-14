@@ -37,6 +37,7 @@ interface FormData {
   acabamento: string;
   maoObra: number;
   precoSugerido: number;
+  imagem: string;
 }
 
 const INITIAL_FORM: FormData = {
@@ -47,7 +48,7 @@ const INITIAL_FORM: FormData = {
   materiais: "", qtdMateriais: 0, custoMaterial: 0,
   protecao: "", qtdProtecao: 0, custoProtecao: 0,
   embalagem: "", custoEmbalagem: 0, acabamento: "padrao",
-  maoObra: 0, precoSugerido: 0,
+  maoObra: 0, precoSugerido: 0, imagem: "",
 };
 
 export default function CadastroPage() {
@@ -55,6 +56,7 @@ export default function CadastroPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [salvando, setSalvando] = useState(false);
+  const [imagemPreview, setImagemPreview] = useState("");
 
   useEffect(() => {
     fetch("/api/categorias").then((r) => r.json()).then(setCategorias);
@@ -99,11 +101,23 @@ export default function CadastroPage() {
     }
   }
 
+  async function handleImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = reader.result as string;
+      setImagemPreview(data);
+      setForm((prev) => ({ ...prev, imagem: data }));
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSalvando(true);
     try {
-      await fetch("/api/produtos", {
+      const res = await fetch("/api/produtos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -116,6 +130,7 @@ export default function CadastroPage() {
           tempoProducao: tempoDecimal,
         }),
       });
+      if (!res.ok) { alert("Erro ao salvar"); return; }
       router.push("/produtos");
     } catch {
       alert("Erro ao salvar");
@@ -162,6 +177,27 @@ export default function CadastroPage() {
           <div className="mt-4">
             <label className="block text-xs font-medium mb-1 text-zinc-500">Produto</label>
             <input name="nome" value={form.nome} onChange={handleChange} required className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
+          </div>
+          <div className="mt-4">
+            <label className="block text-xs font-medium mb-1 text-zinc-500">Imagem do Produto</label>
+            <div className="flex items-start gap-4">
+              <label className="cursor-pointer px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+                Selecionar Arquivo
+                <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
+              </label>
+              {(imagemPreview || form.imagem) && (
+                <div className="relative">
+                  <img src={imagemPreview || form.imagem} alt="Preview" className="w-20 h-20 object-cover rounded-lg border border-zinc-200 dark:border-zinc-700" />
+                  <button type="button" onClick={() => { setImagemPreview(""); setForm((p) => ({ ...p, imagem: "" })); }}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600">×</button>
+                </div>
+              )}
+              {!imagemPreview && !form.imagem && (
+                <div className="w-20 h-20 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center text-xs text-zinc-400">
+                  Sem imagem
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

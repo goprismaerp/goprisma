@@ -14,6 +14,7 @@ interface Produto {
   sku: string;
   nome: string;
   descricao: string;
+  imagem: string;
   custoTotal: number;
   precoSugerido: number;
   pesoUsado: number;
@@ -203,6 +204,13 @@ export default function ProdutosPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtrados.map((p) => (
             <div key={p.id} className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors">
+              {p.imagem ? (
+                <img src={p.imagem} alt={p.nome} className="w-full h-36 object-cover rounded-lg mb-3 bg-zinc-100 dark:bg-zinc-800" />
+              ) : (
+                <div className="w-full h-36 rounded-lg mb-3 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs text-zinc-400">
+                  Sem imagem
+                </div>
+              )}
               <div className="text-xs text-zinc-400 font-mono mb-1">{p.sku}</div>
               <h3 className="font-semibold text-sm leading-snug mb-2">{p.nome}</h3>
               <div className="text-xs text-zinc-400 mb-1">{p.categoria?.nome}</div>

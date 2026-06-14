@@ -38,6 +38,7 @@ export async function PUT(
         sku: body.sku,
         nome: body.nome,
         descricao: body.descricao,
+        imagem: body.imagem,
         categoriaId: Number(body.categoriaId),
         subCategoria: body.subCategoria,
         idImpressora: body.idImpressora,

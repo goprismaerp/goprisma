@@ -89,6 +89,7 @@ model Produto {
   sku               String    @unique
   nome              String
   descricao         String    @default("")
+  imagem            String    @default("")
   categoriaId       Int       @map("categoria_id")
   subCategoria      String    @default("") @map("sub_categoria")
   idImpressora      String    @default("") @map("id_impressora")
