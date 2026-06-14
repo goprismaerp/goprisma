@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Categoria {
+  id       Int       @id @default(autoincrement())
+  nome     String    @unique
+  produtos Produto[]
+  regras   RegraPrecificacao?
+}
+
+model RegraPrecificacao {
+  id              Int      @id @default(autoincrement())
+  categoriaId     Int      @unique @map("categoria_id")
+  markup          Float    @default(0.4)
+  margemSeguranca Float    @default(0) @map("margem_seguranca")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+
+  @@map("regras_precificacao")
+}
+
+model ProdutoMaterial {
+  id         Int      @id @default(autoincrement())
+  produtoId  Int      @map("produto_id")
+  materialId Int      @map("material_id")
+  quantidade Float    @default(1)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  produto  Produto  @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  material Material @relation(fields: [materialId], references: [id])
+
+  @@map("produtos_materiais")
+}
+
+model Material {
+  id             Int       @id @default(autoincrement())
+  skuMat         String    @unique @map("sku_mat")
+  nome           String
+  descricao      String    @default("")
+  tipo           String    @default("")
+  unidades       Int       @default(1)
+  valor          Float     @default(0)
+  vlUni          Float     @default(0) @map("vl_uni")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  produtosVinculados ProdutoMaterial[]
+  movimentosEstoque  MovimentoEstoque[]
+
+  @@map("materiais")
+}
+
+model Embalagem {
+  id             Int       @id @default(autoincrement())
+  skuPack        String    @unique @map("sku_pack")
+  tipo           String    @default("")
+  comprimento    Float     @default(0)
+  largura        Float     @default(0)
+  altura         Float     @default(0)
+  material       String    @default("")
+  unidades       Int       @default(0)
+  valor          Float     @default(0)
+  vlUni          Float     @default(0) @map("vl_uni")
+  lacreTipo      String    @default("") @map("lacre_tipo")
+  lacreDescricao String    @default("") @map("lacre_descricao")
+  lacreMaterial  String    @default("") @map("lacre_material")
+  lacreUnidades  Int       @default(0) @map("lacre_unidades")
+  vlLacre        Float     @default(0) @map("vl_lacre")
+  uniLacre       Int       @default(0) @map("uni_lacre")
+  consumoLacre   Float     @default(0) @map("consumo_lacre")
+  totalLacre     Float     @default(0) @map("total_lacre")
+  totalMat       Float     @default(0) @map("total_mat")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("embalagens")
+}
+
+model Produto {
+  id                Int       @id @default(autoincrement())
+  sku               String    @unique
+  nome              String
+  descricao         String    @default("")
+  categoriaId       Int       @map("categoria_id")
+  subCategoria      String    @default("") @map("sub_categoria")
+  idImpressora      String    @default("") @map("id_impressora")
+  idFilamento       String    @default("") @map("id_filamento")
+  pesoUsado         Float     @default(0) @map("peso_usado")
+  custoFilamento    Float     @default(0) @map("custo_filamento")
+  custoTotalFilam   Float     @default(0) @map("custo_total_filam")
+  tempoHoras        Float     @default(0) @map("tempo_horas")
+  tempoMinutos      Float     @default(0) @map("tempo_minutos")
+  tempoDecimal      Float     @default(0) @map("tempo_decimal")
+  capacidade        Int       @default(0)
+  tampa             String    @default("") @map("tampa")
+  comprimento       Float     @default(0)
+  largura           Float     @default(0)
+  altura            Float     @default(0)
+  custoModelo3D     Float     @default(0) @map("custo_modelo_3d")
+  uniMesa           Int       @default(1) @map("uni_mesa")
+  materiais         String    @default("")
+  qtdMateriais      Int       @default(0) @map("qtd_materiais")
+  custoMaterial     Float     @default(0) @map("custo_material")
+  protecao          String    @default("")
+  qtdProtecao       Int       @default(0) @map("qtd_protecao")
+  custoProtecao     Float     @default(0) @map("custo_protecao")
+  embalagem         String    @default("")
+  custoEmbalagem    Float     @default(0) @map("custo_embalagem")
+  acabamento        String    @default("padrao")
+  custoAcabamento   Float     @default(0) @map("custo_acabamento")
+  maoObra           Float     @default(0) @map("mao_obra")
+  custoTotal        Float     @default(0) @map("custo_total")
+  custoTotalUni     Float     @default(0) @map("custo_total_uni")
+  tempoProducao     Float     @default(0) @map("tempo_producao")
+  precoSugerido     Float     @default(0) @map("preco_sugerido")
+  precoMkplaces     Float     @default(0) @map("preco_mkplaces")
+  precoVendaDir     Float     @default(0) @map("preco_venda_dir")
+  desconto          Float     @default(0)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  categoria          Categoria           @relation(fields: [categoriaId], references: [id])
+  itensPedido        ItensPedido[]
+  materiaisVinculados ProdutoMaterial[]
+  movimentosEstoque  MovimentoEstoque[]
+
+  @@map("produtos")
+}
+
+model Pedido {
+  id            Int       @id @default(autoincrement())
+  cliente       String
+  dataPedido    DateTime  @default(now()) @map("data_pedido")
+  status        String    @default("pendente")
+  valorTotal    Float     @default(0) @map("valor_total")
+  sinal         Float     @default(0)
+  saldoReceber  Float     @default(0) @map("saldo_receber")
+  observacao    String    @default("")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  itens  ItensPedido[]
+  movimentosEstoque  MovimentoEstoque[]
+
+  @@map("pedidos")
+}
+
+model ConfigPrecificacao {
+  id    Int    @id @default(autoincrement())
+  chave String @unique
+  valor String
+  descricao String @default("")
+
+  @@map("config_precificacao")
+}
+
+model Filamento {
+  id                 Int      @id @default(autoincrement())
+  idFilamento        String   @unique @map("id_filamento")
+  amostra            String   @default("")
+  reposicao          String   @default("")
+  material           String   @default("")
+  marca              String   @default("")
+  cor                String   @default("")
+  familia            String   @default("")
+  refBambu           String   @default("") @map("ref_bambu")
+  pesoInicial        Float    @default(0) @map("peso_inicial")
+  pesoAtual          Float    @default(0) @map("peso_atual")
+  precoRolo          Float    @default(0) @map("preco_rolo")
+  custoPorG          Float    @default(0) @map("custo_por_g")
+  fornecedor         String   @default("")
+  estoquePct         Float    @default(0) @map("estoque_pct")
+  alerta             String   @default("")
+  status             String   @default("")
+  consumidoFinalizado Float   @default(0) @map("consumido_finalizado")
+  saldoProjetado     Float    @default(0) @map("saldo_projetado")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("filamentos")
+}
+
+model Impressora {
+  id        Int       @id @default(autoincrement())
+  nome      String
+  modelo    String
+  custoHora Float     @map("custo_hora")
+  ativa     Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("impressoras")
+}
+
+model MovimentoEstoque {
+  id          Int      @id @default(autoincrement())
+  tipo        String
+  produtoId   Int?     @map("produto_id")
+  materialId  Int?     @map("material_id")
+  quantidade  Float
+  saldoApos   Float    @map("saldo_apos")
+  observacao  String   @default("")
+  pedidoId    Int?     @map("pedido_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  produto  Produto?  @relation(fields: [produtoId], references: [id])
+  material Material? @relation(fields: [materialId], references: [id])
+  pedido   Pedido?   @relation(fields: [pedidoId], references: [id])
+
+  @@map("movimentos_estoque")
+}
+
+model ItensPedido {
+  id            Int       @id @default(autoincrement())
+  pedidoId      Int       @map("pedido_id")
+  produtoId     Int       @map("produto_id")
+  quantidade    Int       @default(1)
+  valorUnitario Float     @default(0) @map("valor_unitario")
+
+  pedido  Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  produto Produto @relation(fields: [produtoId], references: [id])
+
+  @@map("itens_pedido")
+}
