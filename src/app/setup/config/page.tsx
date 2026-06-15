@@ -238,6 +238,7 @@ function UsuariosTab() {
   const [editando, setEditando] = useState<Partial<User & { password: string }> | null>(null);
   const [novo, setNovo] = useState({ username: "", password: "", nome: "", role: "visitante" });
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarSenhaEdit, setMostrarSenhaEdit] = useState(false);
 
   function carregar() {
     fetch("/api/users").then((r) => r.json()).then(setUsers);
@@ -328,6 +329,7 @@ function UsuariosTab() {
               <th className="px-4 py-3 font-medium">ID</th>
               <th className="px-4 py-3 font-medium">Usuário</th>
               <th className="px-4 py-3 font-medium">Nome</th>
+              <th className="px-4 py-3 font-medium">Senha</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
               <th className="px-4 py-3 font-medium text-right">Ações</th>
             </tr>
@@ -347,6 +349,16 @@ function UsuariosTab() {
                         className="w-full border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 text-sm bg-white dark:bg-zinc-800" />
                     </td>
                     <td className="px-4 py-2">
+                      <div className="flex gap-1 items-center">
+                        <input type={mostrarSenhaEdit ? "text" : "password"} value={editando.password || ""} onChange={(e) => setEditando((p) => p ? { ...p, password: e.target.value } : null)}
+                          className="flex-1 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 text-sm bg-white dark:bg-zinc-800" placeholder="Nova senha" />
+                        <button type="button" onClick={() => setMostrarSenhaEdit((p) => !p)}
+                          className="text-xs text-zinc-400 hover:text-zinc-600 whitespace-nowrap">
+                          {mostrarSenhaEdit ? "Ocultar" : "Mostrar"}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2">
                       <select value={editando.role || "visitante"} onChange={(e) => setEditando((p) => p ? { ...p, role: e.target.value } : null)}
                         className="w-full border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 text-sm bg-white dark:bg-zinc-800">
                         <option value="visitante">Visitante</option>
@@ -363,6 +375,7 @@ function UsuariosTab() {
                     <td className="px-4 py-3 text-zinc-400 text-xs">{u.id}</td>
                     <td className="px-4 py-3 font-mono text-xs">{u.username}</td>
                     <td className="px-4 py-3">{u.nome}</td>
+                    <td className="px-4 py-3 text-xs text-zinc-400">••••••••</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${u.role === "admin" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"}`}>
                         {u.role === "admin" ? "Admin" : "Visitante"}
@@ -377,7 +390,7 @@ function UsuariosTab() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-zinc-400 text-xs">Nenhum usuário</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-zinc-400 text-xs">Nenhum usuário</td></tr>
             )}
           </tbody>
         </table>
