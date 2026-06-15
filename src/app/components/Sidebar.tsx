@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 
 interface LinkItem {
   href: string;
@@ -69,11 +70,28 @@ const sections: Section[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const [aberto, setAberto] = useState(false);
 
   if (!user || pathname === "/login") return null;
 
   return (
-    <aside className="w-64 min-h-screen bg-zinc-900 dark:bg-black text-zinc-100 flex flex-col border-r border-zinc-700 dark:border-zinc-800 overflow-y-auto">
+    <>
+      {/* Hamburger - mobile */}
+      <button onClick={() => setAberto((p) => !p)}
+        className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-900 dark:bg-black text-white border border-zinc-700">
+        <span className="text-lg">{aberto ? "✕" : "☰"}</span>
+      </button>
+
+      {/* Overlay */}
+      {aberto && (
+        <div onClick={() => setAberto(false)}
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden" />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 min-h-screen bg-zinc-900 dark:bg-black text-zinc-100 flex flex-col border-r border-zinc-700 dark:border-zinc-800 overflow-y-auto transition-transform duration-200 ${
+        aberto ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      }`}>
       <div className="p-6 border-b border-zinc-700 dark:border-zinc-800">
         <h1 className="text-xl font-bold tracking-tight">GoPrisma</h1>
         <p className="text-xs text-zinc-400 mt-1">Sistema ERP</p>
