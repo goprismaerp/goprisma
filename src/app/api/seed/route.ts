@@ -85,8 +85,8 @@ export async function GET() {
     }
 
     // 5. Seed default users
-    const crypto = await import("crypto");
-    function hash(s: string) { return crypto.createHash("sha256").update(s).digest("hex"); }
+    const { createHash } = require("crypto");
+    function hash(s: string) { return createHash("sha256").update(s).digest("hex"); }
     const users = [
       { username: "admin", password: hash("admin123"), nome: "Administrador", role: "admin" },
       { username: "visitante", password: hash("visita123"), nome: "Visitante", role: "visitante" },
