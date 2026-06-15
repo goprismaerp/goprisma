@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 function hashSenha(senha: string): string {
   return crypto.createHash("sha256").update(senha).digest("hex");
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
     const token = Buffer.from(JSON.stringify({ id: user.id, username: user.username, role: user.role, nome: user.nome })).toString("base64");
     return NextResponse.json({ token, user: { id: user.id, username: user.username, nome: user.nome, role: user.role } });
-  } catch {
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: "Erro interno", detail: err?.message || "desconhecido" }, { status: 500 });
   }
 }

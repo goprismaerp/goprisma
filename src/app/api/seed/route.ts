@@ -92,11 +92,12 @@ export async function GET() {
       { username: "visitante", password: hash("visita123"), nome: "Visitante", role: "visitante" },
     ];
     for (const u of users) {
-      const existing = await prisma.user.findUnique({ where: { username: u.username } });
-      if (!existing) {
-        await prisma.user.create({ data: u });
-        results.push(`Usuário "${u.username}" criado`);
-      }
+      await prisma.user.upsert({
+        where: { username: u.username },
+        update: { password: u.password, nome: u.nome, role: u.role },
+        create: u,
+      });
+      results.push(`Usuário "${u.username}" sincronizado`);
     }
 
     return NextResponse.json({ success: true, results });
