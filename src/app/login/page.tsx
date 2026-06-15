@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
@@ -44,10 +45,16 @@ export default function LoginPage() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Senha</label>
-            <input
-              type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-900"
-            />
+            <div className="relative">
+              <input
+                type={mostrarSenha ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 pr-10 text-sm bg-white dark:bg-zinc-900"
+              />
+              <button type="button" onClick={() => setMostrarSenha((p) => !p)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-zinc-400 hover:text-zinc-600">
+                {mostrarSenha ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
           </div>
 
           {erro && <p className="text-sm text-red-500">{erro}</p>}
