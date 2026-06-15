@@ -237,6 +237,7 @@ function UsuariosTab() {
   const [users, setUsers] = useState<User[]>([]);
   const [editando, setEditando] = useState<Partial<User & { password: string }> | null>(null);
   const [novo, setNovo] = useState({ username: "", password: "", nome: "", role: "visitante" });
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   function carregar() {
     fetch("/api/users").then((r) => r.json()).then(setUsers);
@@ -291,8 +292,14 @@ function UsuariosTab() {
           </div>
           <div>
             <label className="block text-xs text-zinc-500 mb-1">Senha</label>
-            <input type="password" value={novo.password} onChange={(e) => setNovo((p) => ({ ...p, password: e.target.value }))}
-              className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-zinc-800" />
+            <div className="relative">
+              <input type={mostrarSenha ? "text" : "password"} value={novo.password} onChange={(e) => setNovo((p) => ({ ...p, password: e.target.value }))}
+                className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 pr-16 text-sm bg-white dark:bg-zinc-800" />
+              <button type="button" onClick={() => setMostrarSenha((p) => !p)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-zinc-600">
+                {mostrarSenha ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-xs text-zinc-500 mb-1">Nome</label>
