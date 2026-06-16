@@ -59,7 +59,7 @@ const sections: Section[] = [
   {
     title: "Setup",
     links: [
-      { href: "/setup", label: "Setup" },
+      { href: "/setup/config", label: "Users" },
       { href: "/setup/config", label: "Config" },
       { href: "/impressoras", label: "Impressoras" },
       { href: "/importar", label: "Importar" },
