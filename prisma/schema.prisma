@@ -161,6 +161,7 @@ model Pedido {
 
   itens  ItensPedido[]
   movimentosEstoque  MovimentoEstoque[]
+  lancamentos Lancamento[]
 
   @@map("pedidos")
 }
@@ -228,6 +229,19 @@ model MovimentoEstoque {
   pedido   Pedido?   @relation(fields: [pedidoId], references: [id])
 
   @@map("movimentos_estoque")
+}
+
+model Lancamento {
+  id         Int      @id @default(autoincrement())
+  descricao  String
+  valor      Float
+  data       DateTime
+  categoria  String   @default("")
+  pedidoId   Int?     @map("pedido_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  pedido     Pedido?  @relation(fields: [pedidoId], references: [id])
+
+  @@map("lancamentos")
 }
 
 model ItensPedido {
