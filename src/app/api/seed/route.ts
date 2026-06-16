@@ -88,7 +88,7 @@ export async function GET() {
     const { createHash } = require("crypto");
     function hash(s: string) { return createHash("sha256").update(s).digest("hex"); }
     const users = [
-      { username: "admin", password: hash("admin123"), nome: "Administrador", role: "admin" },
+      { username: "goadmin", password: hash("prisma1425360"), nome: "Administrador", role: "admin" },
       { username: "visitante", password: hash("visita123"), nome: "Visitante", role: "visitante" },
     ];
     for (const u of users) {

@@ -260,12 +260,16 @@ function UsuariosTab() {
 
   async function atualizar() {
     if (!editando?.id) return;
+    console.log("[atualizar] editando:", JSON.stringify(editando));
     const res = await fetch("/api/users", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editando),
     });
+    console.log("[atualizar] res status:", res.status);
     if (!res.ok) { const d = await res.json(); alert(d.error); return; }
+    const data = await res.json();
+    console.log("[atualizar] response:", data);
     setEditando(null);
     carregar();
   }
