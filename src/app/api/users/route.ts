@@ -57,7 +57,6 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
-    if (id === 1) return NextResponse.json({ error: "Não pode excluir o admin principal" }, { status: 400 });
     await prisma.user.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (err: any) {
