@@ -31,14 +31,6 @@ export async function GET(request: NextRequest) {
       where: { status: { in: ["pendente", "em produção", "entregue"] } },
     }),
     prisma.pedido.count({ where: receitasFilter }),
-    prisma.lancamento.aggregate({
-      _sum: { valor: true },
-      where: { ...dateFilter },
-    }),
-    prisma.pedido.aggregate({
-      _sum: { saldoReceber: true },
-      where: { status: { in: ["pendente", "em produção", "entregue"] } },
-    }),
   ]);
 
   return NextResponse.json({
@@ -48,5 +40,5 @@ export async function GET(request: NextRequest) {
     saldoReceber: aReceber._sum.saldoReceber || 0,
     despesas: Math.abs(despesas._sum.valor || 0),
     saldo: (receitas._sum.valorTotal || 0) - Math.abs(despesas._sum.valor || 0),
-  });
+  }, { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } });
 }
