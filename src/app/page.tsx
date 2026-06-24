@@ -104,23 +104,21 @@ export default function Dashboard() {
         ))}
 
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Faturamento</p>
-              <InfoTip desc="Valor total de todos os pedidos no período selecionado" />
-            </div>
-            <div className="relative">
-              <select
-                value={periodo}
-                onChange={(e) => setPeriodo(Number(e.target.value))}
-                className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-xs rounded-md px-2 py-1 pr-6 border border-zinc-200 dark:border-zinc-700 cursor-pointer"
-              >
-                {PERIODOS.map((p) => (
-                  <option key={p.dias} value={p.dias}>{p.label}</option>
-                ))}
-              </select>
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none">▼</span>
-            </div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Faturamento</p>
+            <InfoTip desc="Valor total de todos os pedidos no período selecionado" />
+          </div>
+          <div className="relative mb-2">
+            <select
+              value={periodo}
+              onChange={(e) => setPeriodo(Number(e.target.value))}
+              className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-[11px] rounded-md px-2 py-1 pr-6 border border-zinc-200 dark:border-zinc-700 cursor-pointer"
+            >
+              {PERIODOS.map((p) => (
+                <option key={p.dias} value={p.dias}>{p.label}</option>
+              ))}
+            </select>
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none">▼</span>
           </div>
           <p className="text-3xl font-bold mt-1 text-emerald-500">{formatCurrency(vendasPeriodo)}</p>
         </div>
