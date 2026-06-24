@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 
@@ -19,11 +19,27 @@ interface Pedido {
   dataPedido: string;
 }
 
+const PERIODOS = [
+  { label: "7 dias", dias: 7 },
+  { label: "15 dias", dias: 15 },
+  { label: "30 dias", dias: 30 },
+  { label: "90 dias", dias: 90 },
+] as const;
+
 export default function Dashboard() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [materiaisCount, setMateriaisCount] = useState(0);
   const [saldoReceber, setSaldoReceber] = useState(0);
+  const [periodo, setPeriodo] = useState(15);
+  const [vendasPeriodo, setVendasPeriodo] = useState(0);
+
+  const fetchVendas = useCallback(async (dias: number) => {
+    const de = new Date(Date.now() - dias * 86400000).toISOString().split("T")[0];
+    const res = await fetch(`/api/financeiro/extrato?de=${de}`);
+    const data = await res.json();
+    setVendasPeriodo(data.receitas);
+  }, []);
 
   useEffect(() => {
     fetch("/api/produtos").then((r) => r.json()).then(setProdutos);
@@ -32,29 +48,56 @@ export default function Dashboard() {
     fetch("/api/financeiro/extrato").then((r) => r.json()).then((data) => setSaldoReceber(data.saldoReceber));
   }, []);
 
+  useEffect(() => {
+    fetchVendas(periodo);
+  }, [periodo, fetchVendas]);
+
   const cards = [
     { label: "Total de Produtos", value: produtos.length, formato: "numero" },
     { label: "Total de Pedidos", value: pedidos.length, formato: "numero" },
     { label: "Total de Materiais", value: materiaisCount, formato: "numero" },
-    { label: "Saldo a Receber", value: saldoReceber, formato: "moeda" },
+    { label: "Saldo a Receber", value: saldoReceber, formato: "moeda", cor: "text-amber-500" },
   ];
+
+  function periodoLabel() {
+    return PERIODOS.find((p) => p.dias === periodo)?.label ?? `${periodo} dias`;
+  }
 
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
         {cards.map((card) => (
           <div
             key={card.label}
             className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm"
           >
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{card.label}</p>
-            <p className={`text-3xl font-bold mt-1 ${card.label === "Saldo a Receber" ? "text-amber-500" : ""}`}>
+            <p className={`text-3xl font-bold mt-1 ${card.cor ?? ""}`}>
               {card.formato === "moeda" ? formatCurrency(card.value as number) : card.value}
             </p>
           </div>
         ))}
+
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Vendas</p>
+            <div className="relative">
+              <select
+                value={periodo}
+                onChange={(e) => setPeriodo(Number(e.target.value))}
+                className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-xs rounded-md px-2 py-1 pr-6 border border-zinc-200 dark:border-zinc-700 cursor-pointer"
+              >
+                {PERIODOS.map((p) => (
+                  <option key={p.dias} value={p.dias}>{p.label}</option>
+                ))}
+              </select>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none">▼</span>
+            </div>
+          </div>
+          <p className="text-3xl font-bold mt-1 text-emerald-500">{formatCurrency(vendasPeriodo)}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
