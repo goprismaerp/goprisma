@@ -29,22 +29,22 @@ const PERIODOS = [
 export default function Dashboard() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [materiaisCount, setMateriaisCount] = useState(0);
   const [saldoReceber, setSaldoReceber] = useState(0);
   const [periodo, setPeriodo] = useState(15);
   const [vendasPeriodo, setVendasPeriodo] = useState(0);
+  const [qtdPedidosPeriodo, setQtdPedidosPeriodo] = useState(0);
 
   const fetchVendas = useCallback(async (dias: number) => {
     const de = new Date(Date.now() - dias * 86400000).toISOString().split("T")[0];
     const res = await fetch(`/api/financeiro/extrato?de=${de}&status=conclu%C3%ADdo`);
     const data = await res.json();
     setVendasPeriodo(data.receitas);
+    setQtdPedidosPeriodo(data.quantidade);
   }, []);
 
   useEffect(() => {
     fetch("/api/produtos").then((r) => r.json()).then(setProdutos);
     fetch("/api/pedidos").then((r) => r.json()).then(setPedidos);
-    fetch("/api/materiais").then((r) => r.json()).then((data) => setMateriaisCount(data.length));
     fetch("/api/financeiro/extrato").then((r) => r.json()).then((data) => setSaldoReceber(data.saldoReceber));
   }, []);
 
@@ -52,16 +52,13 @@ export default function Dashboard() {
     fetchVendas(periodo);
   }, [periodo, fetchVendas]);
 
+  const ticketMedio = qtdPedidosPeriodo > 0 ? vendasPeriodo / qtdPedidosPeriodo : 0;
+
   const cards = [
     { label: "Total de Produtos", value: produtos.length, formato: "numero" },
     { label: "Total de Pedidos", value: pedidos.length, formato: "numero" },
-    { label: "Total de Materiais", value: materiaisCount, formato: "numero" },
     { label: "Saldo a Receber", value: saldoReceber, formato: "moeda", cor: "text-amber-500" },
   ];
-
-  function periodoLabel() {
-    return PERIODOS.find((p) => p.dias === periodo)?.label ?? `${periodo} dias`;
-  }
 
   return (
     <div className="space-y-8">
@@ -97,6 +94,11 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-3xl font-bold mt-1 text-emerald-500">{formatCurrency(vendasPeriodo)}</p>
+        </div>
+
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">Ticket Médio</p>
+          <p className="text-3xl font-bold mt-1 text-violet-500">{formatCurrency(ticketMedio)}</p>
         </div>
       </div>
 

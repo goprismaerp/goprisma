@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const dateFilter = buildDateFilter();
   const receitasFilter = status ? { ...dateFilter, status } : { ...dateFilter };
 
-  const [receitas, despesas, aReceber] = await Promise.all([
+  const [receitas, despesas, aReceber, qtdPedidos] = await Promise.all([
     prisma.pedido.aggregate({
       _sum: { valorTotal: true, sinal: true, saldoReceber: true },
       where: receitasFilter,
@@ -30,10 +30,20 @@ export async function GET(request: NextRequest) {
       _sum: { saldoReceber: true },
       where: { status: { in: ["pendente", "em produção", "entregue"] } },
     }),
+    prisma.pedido.count({ where: receitasFilter }),
+    prisma.lancamento.aggregate({
+      _sum: { valor: true },
+      where: { ...dateFilter },
+    }),
+    prisma.pedido.aggregate({
+      _sum: { saldoReceber: true },
+      where: { status: { in: ["pendente", "em produção", "entregue"] } },
+    }),
   ]);
 
   return NextResponse.json({
     receitas: receitas._sum.valorTotal || 0,
+    quantidade: qtdPedidos,
     sinal: receitas._sum.sinal || 0,
     saldoReceber: aReceber._sum.saldoReceber || 0,
     despesas: Math.abs(despesas._sum.valor || 0),
