@@ -23,31 +23,36 @@ export default function Dashboard() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [materiaisCount, setMateriaisCount] = useState(0);
+  const [saldoReceber, setSaldoReceber] = useState(0);
 
   useEffect(() => {
     fetch("/api/produtos").then((r) => r.json()).then(setProdutos);
     fetch("/api/pedidos").then((r) => r.json()).then(setPedidos);
     fetch("/api/materiais").then((r) => r.json()).then((data) => setMateriaisCount(data.length));
+    fetch("/api/financeiro/extrato").then((r) => r.json()).then((data) => setSaldoReceber(data.saldoReceber));
   }, []);
 
   const cards = [
-    { label: "Total de Produtos", value: produtos.length },
-    { label: "Total de Pedidos", value: pedidos.length },
-    { label: "Total de Materiais", value: materiaisCount },
+    { label: "Total de Produtos", value: produtos.length, formato: "numero" },
+    { label: "Total de Pedidos", value: pedidos.length, formato: "numero" },
+    { label: "Total de Materiais", value: materiaisCount, formato: "numero" },
+    { label: "Saldo a Receber", value: saldoReceber, formato: "moeda" },
   ];
 
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {cards.map((card) => (
           <div
             key={card.label}
             className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm"
           >
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{card.label}</p>
-            <p className="text-3xl font-bold mt-1">{card.value}</p>
+            <p className={`text-3xl font-bold mt-1 ${card.label === "Saldo a Receber" ? "text-amber-500" : ""}`}>
+              {card.formato === "moeda" ? formatCurrency(card.value as number) : card.value}
+            </p>
           </div>
         ))}
       </div>
