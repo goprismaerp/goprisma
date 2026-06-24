@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const de = searchParams.get("de");
   const ate = searchParams.get("ate");
+  const status = searchParams.get("status");
 
   function buildDateFilter() {
     if (!de && !ate) return {};
@@ -14,22 +15,27 @@ export async function GET(request: NextRequest) {
     return f;
   }
   const dateFilter = buildDateFilter();
+  const receitasFilter = status ? { ...dateFilter, status } : { ...dateFilter };
 
-  const [receitas, despesas] = await Promise.all([
+  const [receitas, despesas, aReceber] = await Promise.all([
     prisma.pedido.aggregate({
       _sum: { valorTotal: true, sinal: true, saldoReceber: true },
-      where: { ...dateFilter },
+      where: receitasFilter,
     }),
     prisma.lancamento.aggregate({
       _sum: { valor: true },
       where: { ...dateFilter },
+    }),
+    prisma.pedido.aggregate({
+      _sum: { saldoReceber: true },
+      where: { status: { in: ["pendente", "em produção", "entregue"] } },
     }),
   ]);
 
   return NextResponse.json({
     receitas: receitas._sum.valorTotal || 0,
     sinal: receitas._sum.sinal || 0,
-    saldoReceber: receitas._sum.saldoReceber || 0,
+    saldoReceber: aReceber._sum.saldoReceber || 0,
     despesas: Math.abs(despesas._sum.valor || 0),
     saldo: (receitas._sum.valorTotal || 0) - Math.abs(despesas._sum.valor || 0),
   });

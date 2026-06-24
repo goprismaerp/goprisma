@@ -36,7 +36,7 @@ export default function Dashboard() {
 
   const fetchVendas = useCallback(async (dias: number) => {
     const de = new Date(Date.now() - dias * 86400000).toISOString().split("T")[0];
-    const res = await fetch(`/api/financeiro/extrato?de=${de}`);
+    const res = await fetch(`/api/financeiro/extrato?de=${de}&status=conclu%C3%ADdo`);
     const data = await res.json();
     setVendasPeriodo(data.receitas);
   }, []);
