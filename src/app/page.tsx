@@ -26,6 +26,28 @@ const PERIODOS = [
   { label: "90 dias", dias: 90 },
 ] as const;
 
+function InfoTip({ desc }: { desc: string }) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <span className="relative inline-block">
+      <button
+        onClick={() => setAberto((p) => !p)}
+        onMouseEnter={() => setAberto(true)}
+        onMouseLeave={() => setAberto(false)}
+        className="w-4 h-4 rounded-full bg-zinc-300 dark:bg-zinc-600 text-[10px] font-bold text-white flex items-center justify-center hover:bg-zinc-400 dark:hover:bg-zinc-500 transition-colors"
+      >
+        i
+      </button>
+      {aberto && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 px-3 py-2 rounded-lg bg-zinc-900 dark:bg-black text-white text-xs shadow-lg z-10 pointer-events-none">
+          {desc}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900 dark:border-t-black" />
+        </div>
+      )}
+    </span>
+  );
+}
+
 export default function Dashboard() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -56,9 +78,9 @@ export default function Dashboard() {
   const ticketMedio = qtdPedidosPeriodo > 0 ? vendasPeriodo / qtdPedidosPeriodo : 0;
 
   const cards = [
-    { label: "Total de Produtos", value: produtos.length, formato: "numero" },
-    { label: "Total de Pedidos", value: pedidos.length, formato: "numero" },
-    { label: "Saldo a Receber", value: saldoReceber, formato: "moeda", cor: "text-amber-500" },
+    { label: "Total de Produtos", value: produtos.length, formato: "numero", desc: "Quantidade de produtos cadastrados no catálogo" },
+    { label: "Total de Pedidos", value: pedidos.length, formato: "numero", desc: "Quantidade total de pedidos registrados" },
+    { label: "Saldo a Receber", value: saldoReceber, formato: "moeda", cor: "text-amber-500", desc: "Valor total de pedidos pendentes, em produção ou entregues aguardando pagamento" },
   ];
 
   return (
@@ -71,7 +93,10 @@ export default function Dashboard() {
             key={card.label}
             className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm"
           >
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{card.label}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{card.label}</p>
+              <InfoTip desc={card.desc} />
+            </div>
             <p className={`text-3xl font-bold mt-1 ${card.cor ?? ""}`}>
               {card.formato === "moeda" ? formatCurrency(card.value as number) : card.value}
             </p>
@@ -80,7 +105,10 @@ export default function Dashboard() {
 
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Faturamento</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Faturamento</p>
+              <InfoTip desc="Valor total de todos os pedidos no período selecionado" />
+            </div>
             <div className="relative">
               <select
                 value={periodo}
@@ -98,7 +126,10 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Ticket Médio</p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Ticket Médio</p>
+            <InfoTip desc="Valor médio por pedido no período (faturamento ÷ quantidade de pedidos)" />
+          </div>
           <p className="text-3xl font-bold mt-1 text-violet-500">{formatCurrency(ticketMedio)}</p>
         </div>
       </div>
