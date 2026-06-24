@@ -7,30 +7,27 @@ export async function GET(request: NextRequest) {
   const ate = searchParams.get("ate");
   const status = searchParams.get("status");
 
-  function buildDateFilter() {
+  function dateFilter(field: string): Record<string, unknown> {
     if (!de && !ate) return {};
-    const f: Record<string, unknown> = {};
-    if (de) f.gte = new Date(de);
-    if (ate) f.lte = new Date(ate + "T23:59:59");
-    return f;
+    return { [field]: { ...(de && { gte: new Date(de) }), ...(ate && { lte: new Date(ate + "T23:59:59") }) } };
   }
-  const dateFilter = buildDateFilter();
-  const receitasFilter = status ? { ...dateFilter, status } : { ...dateFilter };
+  const pedFilter = { ...dateFilter("dataPedido"), ...(status && { status }) };
+  const despFilter = dateFilter("data");
 
   const [receitas, despesas, aReceber, qtdPedidos] = await Promise.all([
     prisma.pedido.aggregate({
       _sum: { valorTotal: true, sinal: true, saldoReceber: true },
-      where: receitasFilter,
+      where: pedFilter,
     }),
     prisma.lancamento.aggregate({
       _sum: { valor: true },
-      where: { ...dateFilter },
+      where: despFilter,
     }),
     prisma.pedido.aggregate({
       _sum: { saldoReceber: true },
       where: { status: { in: ["pendente", "em produção", "entregue"] } },
     }),
-    prisma.pedido.count({ where: receitasFilter }),
+    prisma.pedido.count({ where: pedFilter }),
   ]);
 
   return NextResponse.json({
