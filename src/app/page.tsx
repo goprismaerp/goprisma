@@ -37,7 +37,7 @@ export default function Dashboard() {
   const fetchVendas = useCallback(async (dias: number) => {
     const de = new Date(Date.now() - dias * 86400000).toISOString().split("T")[0];
     const _ = Date.now();
-    const res = await fetch(`/api/financeiro/extrato?de=${de}&status=conclu%C3%ADdo&_=${_}`);
+    const res = await fetch(`/api/financeiro/extrato?de=${de}&_=${_}`);
     const data = await res.json();
     setVendasPeriodo(data.receitas);
     setQtdPedidosPeriodo(data.quantidade);
@@ -80,7 +80,7 @@ export default function Dashboard() {
 
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Vendas</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Faturamento</p>
             <div className="relative">
               <select
                 value={periodo}
